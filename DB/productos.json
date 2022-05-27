@@ -1,0 +1,26 @@
+[
+    {
+      "id": 1,
+      "nombre": "Escuadra",
+      "descripcion": "Escuadra de plastico marca Maped",
+      "foto_url": "https://cdn3.iconfinder.com/data/icons/education-209/64/ruler-triangle-stationary-school-64.png",
+      "precio": 123.45,
+      "stock": 4
+    },
+    {
+      "id": 2,
+      "nombre": "Calculadora",
+      "descripcion": "Calculadora marca Sony",
+      "foto_url": "https://cdn3.iconfinder.com/data/icons/education-209/64/calculator-math-tool-school-64.png",
+      "precio": 234.56,
+      "stock": 3
+    },
+    {
+      "id": 3,
+      "nombre": "Globo Terráqueo",
+      "descripcion": "Globo Terráqueo mediano marca Terra",
+      "foto_url": "https://cdn3.iconfinder.com/data/icons/education-209/64/globe-earth-geograhy-planet-school-64.png",
+      "precio": 345.67,
+      "stock": 2
+    }
+  ]
