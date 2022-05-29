@@ -1,11 +1,7 @@
 import ContenedorFirebase from "../../classes/ContenedorFireBase";
 
 
-class CarritoDaoFirebase extends ContenedorFirebase {
-    constructor() {
-        super ('carrito')
-    }
-}
+class CarritoDaoFirebase extends ContenedorFirebase {}
 
 
 export default CarritoDaoFirebase
