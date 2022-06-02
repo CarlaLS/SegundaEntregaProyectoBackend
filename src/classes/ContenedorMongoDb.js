@@ -1,140 +1,126 @@
+
 import mongoose from 'mongoose'
 import config from '../config.js'
 
-await mongoose.connect(config.mongodb.cnxStr, config.mongodb.options)
-
-
+try {
+  await mongoose.connect(config.mongodb.cnxStr, config.mongodb.options, () =>
+    console.log('Mongoose conectado')
+  )
+} catch (error) {
+  console.log('Mongoose no conectado.')
+}
 const dbConnection = mongoose.connection
-dbConnection.on('error', (err) => console.log(`error ${err}`))
-dbConnection.once('open', () => console.log('Connectado'))
+dbConnection.on('error', (error) => console.log(`Connection error: ${error}`))
+dbConnection.once('open', () => console.log('Connectedo a  DB!'))
+
+
 
 class ContenedorMongoDb {
+  constructor(collectionName, schema) {
+    this.collection = mongoose.model(collectionName, schema)
+  }
 
-    constructor(nombreColeccion, esquema) {
-        this.coleccion = mongoose.model(nombreColeccion, esquema)
+  async getAll() {
+    try {
+      const todosItems = await this.collection.find({})
+      return todosItems
+    } catch (error) {
+      throw new Error(`Error: ${error}`)
     }
+  }
 
-    async getAll() {
-        try {
-            const todosItems = await this.readFile()
-            return todosItems
-    
-        } catch (error) {
-          await this.writeFile([])
-          const todosItems = await this.readFile()
-        
-          return todosItems
-        }
+  async getById(id) {
+    try {
+      const encontrarItem = await this.collection.find({ id: Number(id) })
+      return encontrarItem
+    } catch (error) {
+      throw new Error(`Error: ${error}`)
+    }
+  }
+
+  async addItem(object) {
+    try {
+      await this.collection.create(object)
+    } catch (error) {
+      throw new Error(`Error: ${error}`)
+    }
+  }
+
+  async editById(object, id) {
+    try {
+      await this.collection.updateOne(
+        {
+          id: id,
+        },
+        { $set: object }
+      )
+    } catch (error) {
+      throw new Error(`Error: ${error}`)
+    }
+  }
+
+  async deleteById(id) {
+    try {
+      const encontrarItem = await this.collection.find({ id: Number(id) })
+      if (encontrarItem && encontrarItem.length) {
+        await this.collection.deleteOne({
+          id: id,
+        })
+        return true
+      } else {
+        return false
       }
-      async getById(id) {
-        try {
-          const todosItems = await this.readFile()
-          const encontrarItem = todosItems.find((e) => e.id === Number(id))
-          return encontrarItem
-    
-        } catch (error) {
-          console.log(`ERROR: ${error}`)
+    } catch (error) {
+      throw new Error(`Error: ${error}`)
+    }
+  }
+
+  async deleteAll() {
+    try {
+      await this.collection.deleteMany({})
+    } catch (error) {
+      throw new Error(`Error: ${error}`)
+    }
+  }
+
+  async addItemInto(containerId, object) {
+    try {
+      await this.collection.updateOne({ id: containerId }, { $push: { productos: object[0] } })
+    } catch (error) {
+      throw new Error(`Error: ${error}`)
+    }
+  }
+
+  async removeItemFrom(containerId, objectId) {
+    try {
+      await this.collection.updateOne(
+        { id: containerId },
+        {
+          $pull: {
+            productos: { id: objectId },
+          },
         }
-      }
-    
-      async add(objeto) {
-        try {
-          const todosItems = await this.readFile()
-          todosItems.push(objeto)
-    
-          await this.writeFile(todosItems)
-            
-        } catch (error) {
-          console.log(`ERROR: ${error}`)
+      )
+    } catch (error) {
+      throw new Error(`Error: ${error}`)
+    }
+  }
+
+  async emptyContainer(containerId) {
+    try {
+      await this.collection.updateOne(
+        { id: containerId },
+        {
+          $pullAll: {
+            productos: [{}],
+          },
         }
-      }
-    
-      async editById(objeto) {
-        try {
-          let todosItems = await this.readFile()
-          todosItems = todosItems.map((e) => (e.id !== objeto.id ? e : objeto))
-    
-          await this.writeFile(todosItems)
-        } catch (error) {
-          console.log(`ERROR: ${error}`)
-        }
-      }
-    
-      async deleteById(id) {
-        try {
-          const todosItems = await this.readFile()
-        
-          const filtrarItemLista = todosItems.filter((e) => e.id !== Number(id))
-    
-          if (JSON.stringify(todosItems) === JSON.stringify(filtrarItemLista)) {
-            return false
-          } else {
-            await this.writeFile(filtrarItemLista)
-    
-            return true
-          }
-        } catch (error) {
-          console.log(`ERROR: ${error}`)
-        }
-      }
-    
-    
-      async deleteAll() {
-        try {
-          await this.writeFile([])
-        } catch (error) {
-          console.log(`ERROR: ${error}`)
-        }
-      }
-    
-      async addItem(contenedorId, objecto) {
-        try {
-          let todosItems = await this.readFile()
-          let itemEncontrado = todosItems.find((e) => e.id === Number(contenedorId))
-          itemEncontrado.productos.push(objecto)
-    
-          todosItems = todosItems.map((e) => (e.id !== itemEncontrado.id ? e : itemEncontrado))
-    
-          await this.writeFile(todosItems)
-        
-        } catch (error) {
-          console.log(`ERROR: ${error}`)
-        }
-      }
-    
-      async removeItem(contenedorId, objectoId) {
-        try {
-          let todosItems = await this.readFile()
-          let itemEncontrado = todosItems.find((e) => e.id === Number(contenedorId))
-          itemEncontrado.productos = itemEncontrado.productos.filter((e) => e.id !== Number(objectoId))
-    
-    
-          todosItems = todosItems.map((e) => (e.id !== itemEncontrado.id ? e : itemEncontrado))
-    
-          await this.writeFile(todosItems)
-            
-        } catch (error) {
-          console.log(`ERROR: ${error}`)
-        }
-      }
-    
-      async emptyContenedor(contenedorId) {
-        try {
-          let todosItems = await this.readFile()
-          
-    
-          let itemEncontrado = todosItems.find((e) => e.id === Number(contenedorId))
-          itemEncontrado.productos = []
-    
-          todosItems = todosItems.map((e) => (e.id !== itemEncontrado.id ? e : itemEncontrado))
-    
-          await this.writeFile(todosItems)
-            
-      
-        } catch (error) {
-          console.log(`ERROR: ${error}`)
-        }
-      }
+      )
+    } catch (error) {
+      throw new Error(`Error: ${error}`)
+    }
+  }
 }
+
 
 export default ContenedorMongoDb
